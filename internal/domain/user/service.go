@@ -5,13 +5,13 @@ import (
 	"strings"
 )
 
-type ValidationService struct{}
+type validationService struct{}
 
-func NewValidationService() *ValidationService {
-	return &ValidationService{}
+func NewValidationService() *validationService {
+	return &validationService{}
 }
 
-func (s *ValidationService) ValidateUser(user User) error {
+func (s *validationService) ValidateUser(user User) error {
 	return errors.Join(
 		s.validateAge(user),
 		s.validateEmail(user),
@@ -19,14 +19,14 @@ func (s *ValidationService) ValidateUser(user User) error {
 	)
 }
 
-func (s *ValidationService) validateAge(user User) error {
+func (s *validationService) validateAge(user User) error {
 	if user.Age < 18 {
 		return NewAgeMinimumError()
 	}
 	return nil
 }
 
-func (s *ValidationService) validateEmail(user User) error {
+func (s *validationService) validateEmail(user User) error {
 	if user.Email == "" {
 		return NewEmailRequiredError()
 	}
@@ -36,7 +36,7 @@ func (s *ValidationService) validateEmail(user User) error {
 	return nil
 }
 
-func (s *ValidationService) validateName(user User) error {
+func (s *validationService) validateName(user User) error {
 	if user.FirstName == "" || user.LastName == "" {
 		return NewNameRequiredError()
 	}

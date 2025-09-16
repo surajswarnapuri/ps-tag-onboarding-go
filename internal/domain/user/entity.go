@@ -1,3 +1,4 @@
+// Package user contains the logic for the User domain.
 package user
 
 type User struct {

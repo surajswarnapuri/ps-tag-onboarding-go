@@ -1,3 +1,4 @@
+// Package inmemory contains the implementation of the User repository in memory.
 package inmemory
 
 import (

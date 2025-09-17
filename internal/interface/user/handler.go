@@ -44,7 +44,7 @@ func (h Handler) Find() shared.Handler {
 			}
 
 			var userDTO UserDTO
-			userDTO.FromDomain(user)
+			userDTO.FromEntity(user)
 
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
@@ -61,13 +61,13 @@ func (h Handler) Save() shared.Handler {
 		Func: func(w http.ResponseWriter, r *http.Request) {
 			var userRequest UserDTO
 			json.NewDecoder(r.Body).Decode(&userRequest)
-			user, err := h.userService.Save(r.Context(), userRequest.ToDomain())
+			user, err := h.userService.Save(r.Context(), userRequest.ToEntity())
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 			var userResponse UserDTO
-			userResponse.FromDomain(user)
+			userResponse.FromEntity(user)
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(userResponse)

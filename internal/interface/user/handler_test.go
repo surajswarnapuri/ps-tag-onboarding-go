@@ -90,7 +90,7 @@ func TestSave_HappyPath(t *testing.T) {
 
 	// Create a UserDTO for the request body
 	var userRequest UserDTO
-	userRequest.FromDomain(serviceUser)
+	userRequest.FromEntity(serviceUser)
 	body, err := json.Marshal(userRequest)
 	if err != nil {
 		t.Fatalf("failed to marshal userRequest: %v", err)

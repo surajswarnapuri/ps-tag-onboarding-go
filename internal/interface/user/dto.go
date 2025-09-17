@@ -10,7 +10,7 @@ type UserDTO struct {
 	Age       int    `json:"age"`
 }
 
-func (u *UserDTO) ToDomain() *userDomain.User {
+func (u *UserDTO) ToEntity() *userDomain.User {
 	return &userDomain.User{
 		ID:        u.ID,
 		FirstName: u.FirstName,
@@ -20,7 +20,7 @@ func (u *UserDTO) ToDomain() *userDomain.User {
 	}
 }
 
-func (u *UserDTO) FromDomain(user *userDomain.User) {
+func (u *UserDTO) FromEntity(user *userDomain.User) {
 	u.ID = user.ID
 	u.FirstName = user.FirstName
 	u.LastName = user.LastName

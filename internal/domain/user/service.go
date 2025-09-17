@@ -7,10 +7,12 @@ import (
 
 type validationService struct{}
 
+// NewValidationService creates a new validation service
 func NewValidationService() *validationService {
 	return &validationService{}
 }
 
+// ValidateUser validates a user
 func (s *validationService) ValidateUser(user User) error {
 	return errors.Join(
 		s.validateAge(user),

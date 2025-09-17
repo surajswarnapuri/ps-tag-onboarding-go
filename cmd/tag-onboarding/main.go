@@ -8,6 +8,7 @@ import (
 	userApplication "github.com/surajswarnapuri/ps-tag-onboarding-go/internal/application/user"
 	userEntity "github.com/surajswarnapuri/ps-tag-onboarding-go/internal/domain/user"
 	userInfra "github.com/surajswarnapuri/ps-tag-onboarding-go/internal/infrastructure/persistence/in-memory"
+	"github.com/surajswarnapuri/ps-tag-onboarding-go/internal/interface/middleware"
 	userInterface "github.com/surajswarnapuri/ps-tag-onboarding-go/internal/interface/user"
 )
 
@@ -19,6 +20,10 @@ func main() {
 
 	// HTTP Server Setup
 	mux := mux.NewRouter()
+
+	// Middleware Setup - Apply before routes
+	mux.Use(middleware.RequestLogger)
+
 	userHandler.Find().AddRoute(mux)
 	userHandler.Save().AddRoute(mux)
 

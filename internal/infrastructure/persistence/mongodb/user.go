@@ -3,11 +3,11 @@ package mongodb
 import userEntity "github.com/surajswarnapuri/ps-tag-onboarding-go/internal/domain/user"
 
 type user struct {
-	ID        string `bson:"id"`
-	FirstName string `bson:"first_name"`
-	LastName  string `bson:"last_name"`
-	Email     string `bson:"email"`
-	Age       int    `bson:"age"`
+	ID        string `bson:"_id,omitempty"`
+	FirstName string `bson:"first_name,omitempty"`
+	LastName  string `bson:"last_name,omitempty"`
+	Email     string `bson:"email,omitempty"`
+	Age       int    `bson:"age,omitempty"`
 }
 
 func (u *user) ToEntity() *userEntity.User {

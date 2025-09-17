@@ -9,3 +9,12 @@ services:
       - 8080:8080
     environment:
       - PORT=8080
+  
+  mongo:
+    image: mongo:3.6.17-xenial
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+      MONGO_INITDB_DATABASE: user

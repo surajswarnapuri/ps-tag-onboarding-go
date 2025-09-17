@@ -26,6 +26,10 @@ type Handler struct {
 	userService userApplicationService
 }
 
+func NewHandler(userService userApplicationService) *Handler {
+	return &Handler{userService: userService}
+}
+
 func (h Handler) Find() shared.Handler {
 	return shared.Handler{
 		Route: func(r *mux.Route) {

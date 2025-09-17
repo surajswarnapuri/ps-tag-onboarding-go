@@ -30,13 +30,12 @@ func TestFind_HappyPath(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := mux.NewRouter()
 	serviceUser := &userDomain.User{ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25}
-	handler := Handler{
-		userService: &mockUserApplicationService{
-			FindFunc: func(ctx context.Context, id string) (*userDomain.User, error) {
-				return serviceUser, nil
-			},
+	userService := &mockUserApplicationService{
+		FindFunc: func(ctx context.Context, id string) (*userDomain.User, error) {
+			return serviceUser, nil
 		},
 	}
+	handler := NewHandler(userService)
 	handler.Find().AddRoute(r)
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/find/1", nil))
 	if w.Code != http.StatusOK {
@@ -64,13 +63,12 @@ func TestFind_HappyPath(t *testing.T) {
 func TestFind_Error(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := mux.NewRouter()
-	handler := Handler{
-		userService: &mockUserApplicationService{
-			FindFunc: func(ctx context.Context, id string) (*userDomain.User, error) {
-				return nil, fmt.Errorf("user not found")
-			},
+	userService := &mockUserApplicationService{
+		FindFunc: func(ctx context.Context, id string) (*userDomain.User, error) {
+			return nil, fmt.Errorf("user not found")
 		},
 	}
+	handler := NewHandler(userService)
 	handler.Find().AddRoute(r)
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/find/1", nil))
 	if w.Code != http.StatusInternalServerError {
@@ -82,13 +80,12 @@ func TestSave_HappyPath(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := mux.NewRouter()
 	serviceUser := &userDomain.User{ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25}
-	handler := Handler{
-		userService: &mockUserApplicationService{
-			SaveFunc: func(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
-				return user, nil
-			},
+	userService := &mockUserApplicationService{
+		SaveFunc: func(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
+			return user, nil
 		},
 	}
+	handler := NewHandler(userService)
 	handler.Save().AddRoute(r)
 
 	// Create a UserDTO for the request body
@@ -129,13 +126,12 @@ func TestSave_HappyPath(t *testing.T) {
 func TestSave_Error(t *testing.T) {
 	w := httptest.NewRecorder()
 	r := mux.NewRouter()
-	handler := Handler{
-		userService: &mockUserApplicationService{
-			SaveFunc: func(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
-				return nil, fmt.Errorf("invalid user")
-			},
+	userService := &mockUserApplicationService{
+		SaveFunc: func(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
+			return nil, fmt.Errorf("invalid user")
 		},
 	}
+	handler := NewHandler(userService)
 	handler.Save().AddRoute(r)
 	r.ServeHTTP(w, httptest.NewRequest("POST", "/save", nil))
 

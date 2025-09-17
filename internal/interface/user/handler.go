@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/gorilla/mux"
+
 	userDomain "github.com/surajswarnapuri/ps-tag-onboarding-go/internal/domain/user"
 )
 
@@ -22,7 +24,8 @@ func NewHandler(userService userService) *Handler {
 }
 
 func (h *Handler) Find(w http.ResponseWriter, r *http.Request) {
-	id := r.PathValue("id")
+	vars := mux.Vars(r)
+	id := vars["id"]
 	user, err := h.userService.Find(r.Context(), id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -30,6 +33,8 @@ func (h *Handler) Find(w http.ResponseWriter, r *http.Request) {
 	}
 	var userDTO UserDTO
 	userDTO.FromDomain(user)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(userDTO)
 }
 
@@ -43,5 +48,7 @@ func (h *Handler) Save(w http.ResponseWriter, r *http.Request) {
 	}
 	var userDTOResponse UserDTO
 	userDTOResponse.FromDomain(user)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(userDTOResponse)
 }

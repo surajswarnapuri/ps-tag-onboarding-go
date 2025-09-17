@@ -26,9 +26,9 @@ func (r *repository) FindByID(ctx context.Context, id string) (*user.User, error
 	return user, nil
 }
 
-func (r *repository) Save(ctx context.Context, user *user.User) error {
+func (r *repository) Save(ctx context.Context, user *user.User) (*user.User, error) {
 	r.users[user.ID] = user
-	return nil
+	return user, nil
 }
 
 func (r *repository) ExistsByFirstNameAndLastName(ctx context.Context, firstName string, lastName string) bool {

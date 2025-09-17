@@ -32,14 +32,14 @@ func (s *service) Find(ctx context.Context, id string) (*user.User, error) {
 	return user, nil
 }
 
-func (s *service) Save(ctx context.Context, user *user.User) error {
+func (s *service) Save(ctx context.Context, user *user.User) (*user.User, error) {
 	err := s.userValidationService.ValidateUser(*user)
 	if err != nil {
-		return fmt.Errorf("service: failed to validate user: %w", err)
+		return nil, fmt.Errorf("service: failed to validate user: %w", err)
 	}
 
 	if s.nameCombinationExists(ctx, user) {
-		return fmt.Errorf("service: name combination already exists")
+		return nil, fmt.Errorf("service: name combination already exists")
 	}
 
 	return s.userRepository.Save(ctx, user)

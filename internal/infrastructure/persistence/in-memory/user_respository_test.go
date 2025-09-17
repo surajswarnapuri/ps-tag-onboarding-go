@@ -120,7 +120,7 @@ func TestRepository_Save(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &repository{users: tt.existingUsers}
 
-			err := repo.Save(context.Background(), tt.userToSave)
+			_, err := repo.Save(context.Background(), tt.userToSave)
 
 			if tt.expectedError && err == nil {
 				t.Errorf("Save() expected error, got nil")
@@ -226,13 +226,10 @@ func TestRepository_ExistsByFirstNameAndLastName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &repository{users: tt.existingUsers}
 
-			result, err := repo.ExistsByFirstNameAndLastName(context.Background(), tt.firstName, tt.lastName)
+			result := repo.ExistsByFirstNameAndLastName(context.Background(), tt.firstName, tt.lastName)
 
-			if tt.expectedError && err == nil {
+			if tt.expectedError && !result {
 				t.Errorf("ExistsByFirstNameAndLastName() expected error, got nil")
-			}
-			if !tt.expectedError && err != nil {
-				t.Errorf("ExistsByFirstNameAndLastName() unexpected error: %v", err)
 			}
 			if result != tt.expected {
 				t.Errorf("ExistsByFirstNameAndLastName() = %v, want %v", result, tt.expected)
@@ -324,13 +321,10 @@ func TestRepository_ExistsByFirstNameAndLastNameAndIDNot(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &repository{users: tt.existingUsers}
 
-			result, err := repo.ExistsByFirstNameAndLastNameAndIDNot(context.Background(), tt.firstName, tt.lastName, tt.excludeID)
+			result := repo.ExistsByFirstNameAndLastNameAndIDNot(context.Background(), tt.firstName, tt.lastName, tt.excludeID)
 
-			if tt.expectedError && err == nil {
+			if tt.expectedError && !result {
 				t.Errorf("ExistsByFirstNameAndLastNameAndIDNot() expected error, got nil")
-			}
-			if !tt.expectedError && err != nil {
-				t.Errorf("ExistsByFirstNameAndLastNameAndIDNot() unexpected error: %v", err)
 			}
 			if result != tt.expected {
 				t.Errorf("ExistsByFirstNameAndLastNameAndIDNot() = %v, want %v", result, tt.expected)
@@ -351,7 +345,7 @@ func TestRepository_EdgeCases(t *testing.T) {
 			Age:       25,
 		}
 
-		err := repo.Save(context.Background(), user)
+		_, err := repo.Save(context.Background(), user)
 		if err != nil {
 			t.Errorf("Save() with empty ID should not error: %v", err)
 		}
@@ -375,13 +369,14 @@ func TestRepository_EdgeCases(t *testing.T) {
 			Email:     "test@example.com",
 			Age:       25,
 		}
-		repo.Save(context.Background(), user)
+		_, err := repo.Save(context.Background(), user)
+		if err != nil {
+			t.Errorf("Save() with empty ID should not error: %v", err)
+		}
 
 		// Check if empty names exist
-		exists, err := repo.ExistsByFirstNameAndLastName(context.Background(), "", "")
-		if err != nil {
-			t.Errorf("ExistsByFirstNameAndLastName() with empty names should not error: %v", err)
-		}
+		exists := repo.ExistsByFirstNameAndLastName(context.Background(), "", "")
+
 		if !exists {
 			t.Errorf("ExistsByFirstNameAndLastName() with empty names should return true")
 		}

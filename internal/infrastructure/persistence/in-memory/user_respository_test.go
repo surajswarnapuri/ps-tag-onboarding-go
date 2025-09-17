@@ -120,7 +120,7 @@ func TestRepository_Save(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &repository{users: tt.existingUsers}
 
-			err := repo.Save(context.Background(), tt.userToSave)
+			savedUser, err := repo.Save(context.Background(), tt.userToSave)
 
 			if tt.expectedError && err == nil {
 				t.Errorf("Save() expected error, got nil")
@@ -129,10 +129,8 @@ func TestRepository_Save(t *testing.T) {
 				t.Errorf("Save() unexpected error: %v", err)
 			}
 
-			// Verify user was saved
-			savedUser, err := repo.FindByID(context.Background(), tt.userToSave.ID)
-			if err != nil {
-				t.Errorf("Save() user not found after save: %v", err)
+			if savedUser == nil {
+				t.Errorf("Save() saved user is nil")
 			}
 			if savedUser.ID != tt.userToSave.ID {
 				t.Errorf("Save() saved user ID = %v, want %v", savedUser.ID, tt.userToSave.ID)
@@ -148,7 +146,6 @@ func TestRepository_ExistsByFirstNameAndLastName(t *testing.T) {
 		firstName     string
 		lastName      string
 		expected      bool
-		expectedError bool
 	}{
 		{
 			name: "user exists with exact match",
@@ -156,40 +153,36 @@ func TestRepository_ExistsByFirstNameAndLastName(t *testing.T) {
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 				"2": {ID: "2", FirstName: "Jane", LastName: "Smith", Email: "jane@example.com", Age: 30},
 			},
-			firstName:     "John",
-			lastName:      "Doe",
-			expected:      true,
-			expectedError: false,
+			firstName: "John",
+			lastName:  "Doe",
+			expected:  true,
 		},
 		{
 			name: "user does not exist",
 			existingUsers: map[string]*user.User{
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 			},
-			firstName:     "Jane",
-			lastName:      "Smith",
-			expected:      false,
-			expectedError: false,
+			firstName: "Jane",
+			lastName:  "Smith",
+			expected:  false,
 		},
 		{
 			name: "partial match - first name only",
 			existingUsers: map[string]*user.User{
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 			},
-			firstName:     "John",
-			lastName:      "Smith",
-			expected:      false,
-			expectedError: false,
+			firstName: "John",
+			lastName:  "Smith",
+			expected:  false,
 		},
 		{
 			name: "partial match - last name only",
 			existingUsers: map[string]*user.User{
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 			},
-			firstName:     "Jane",
-			lastName:      "Doe",
-			expected:      false,
-			expectedError: false,
+			firstName: "Jane",
+			lastName:  "Doe",
+			expected:  false,
 		},
 		{
 			name:          "empty repository",
@@ -197,17 +190,15 @@ func TestRepository_ExistsByFirstNameAndLastName(t *testing.T) {
 			firstName:     "John",
 			lastName:      "Doe",
 			expected:      false,
-			expectedError: false,
 		},
 		{
 			name: "case sensitive match",
 			existingUsers: map[string]*user.User{
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 			},
-			firstName:     "john",
-			lastName:      "doe",
-			expected:      false,
-			expectedError: false,
+			firstName: "john",
+			lastName:  "doe",
+			expected:  false,
 		},
 		{
 			name: "multiple users with same name",
@@ -215,10 +206,9 @@ func TestRepository_ExistsByFirstNameAndLastName(t *testing.T) {
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john1@example.com", Age: 25},
 				"2": {ID: "2", FirstName: "John", LastName: "Doe", Email: "john2@example.com", Age: 30},
 			},
-			firstName:     "John",
-			lastName:      "Doe",
-			expected:      true,
-			expectedError: false,
+			firstName: "John",
+			lastName:  "Doe",
+			expected:  true,
 		},
 	}
 
@@ -226,14 +216,8 @@ func TestRepository_ExistsByFirstNameAndLastName(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &repository{users: tt.existingUsers}
 
-			result, err := repo.ExistsByFirstNameAndLastName(context.Background(), tt.firstName, tt.lastName)
+			result := repo.ExistsByFirstNameAndLastName(context.Background(), tt.firstName, tt.lastName)
 
-			if tt.expectedError && err == nil {
-				t.Errorf("ExistsByFirstNameAndLastName() expected error, got nil")
-			}
-			if !tt.expectedError && err != nil {
-				t.Errorf("ExistsByFirstNameAndLastName() unexpected error: %v", err)
-			}
 			if result != tt.expected {
 				t.Errorf("ExistsByFirstNameAndLastName() = %v, want %v", result, tt.expected)
 			}
@@ -249,7 +233,6 @@ func TestRepository_ExistsByFirstNameAndLastNameAndIDNot(t *testing.T) {
 		lastName      string
 		excludeID     string
 		expected      bool
-		expectedError bool
 	}{
 		{
 			name: "user exists with different ID",
@@ -257,33 +240,30 @@ func TestRepository_ExistsByFirstNameAndLastNameAndIDNot(t *testing.T) {
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john1@example.com", Age: 25},
 				"2": {ID: "2", FirstName: "John", LastName: "Doe", Email: "john2@example.com", Age: 30},
 			},
-			firstName:     "John",
-			lastName:      "Doe",
-			excludeID:     "1",
-			expected:      true,
-			expectedError: false,
+			firstName: "John",
+			lastName:  "Doe",
+			excludeID: "1",
+			expected:  true,
 		},
 		{
 			name: "user exists but same ID (should be excluded)",
 			existingUsers: map[string]*user.User{
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 			},
-			firstName:     "John",
-			lastName:      "Doe",
-			excludeID:     "1",
-			expected:      false,
-			expectedError: false,
+			firstName: "John",
+			lastName:  "Doe",
+			excludeID: "1",
+			expected:  false,
 		},
 		{
 			name: "no user exists with that name",
 			existingUsers: map[string]*user.User{
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 			},
-			firstName:     "Jane",
-			lastName:      "Smith",
-			excludeID:     "1",
-			expected:      false,
-			expectedError: false,
+			firstName: "Jane",
+			lastName:  "Smith",
+			excludeID: "1",
+			expected:  false,
 		},
 		{
 			name:          "empty repository",
@@ -292,7 +272,6 @@ func TestRepository_ExistsByFirstNameAndLastNameAndIDNot(t *testing.T) {
 			lastName:      "Doe",
 			excludeID:     "1",
 			expected:      false,
-			expectedError: false,
 		},
 		{
 			name: "multiple users, one excluded by ID",
@@ -301,22 +280,20 @@ func TestRepository_ExistsByFirstNameAndLastNameAndIDNot(t *testing.T) {
 				"2": {ID: "2", FirstName: "John", LastName: "Doe", Email: "john2@example.com", Age: 30},
 				"3": {ID: "3", FirstName: "Jane", LastName: "Smith", Email: "jane@example.com", Age: 28},
 			},
-			firstName:     "John",
-			lastName:      "Doe",
-			excludeID:     "1",
-			expected:      true,
-			expectedError: false,
+			firstName: "John",
+			lastName:  "Doe",
+			excludeID: "1",
+			expected:  true,
 		},
 		{
 			name: "case sensitive match",
 			existingUsers: map[string]*user.User{
 				"1": {ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25},
 			},
-			firstName:     "john",
-			lastName:      "doe",
-			excludeID:     "2",
-			expected:      false,
-			expectedError: false,
+			firstName: "john",
+			lastName:  "doe",
+			excludeID: "2",
+			expected:  false,
 		},
 	}
 
@@ -324,14 +301,8 @@ func TestRepository_ExistsByFirstNameAndLastNameAndIDNot(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			repo := &repository{users: tt.existingUsers}
 
-			result, err := repo.ExistsByFirstNameAndLastNameAndIDNot(context.Background(), tt.firstName, tt.lastName, tt.excludeID)
+			result := repo.ExistsByFirstNameAndLastNameAndIDNot(context.Background(), tt.firstName, tt.lastName, tt.excludeID)
 
-			if tt.expectedError && err == nil {
-				t.Errorf("ExistsByFirstNameAndLastNameAndIDNot() expected error, got nil")
-			}
-			if !tt.expectedError && err != nil {
-				t.Errorf("ExistsByFirstNameAndLastNameAndIDNot() unexpected error: %v", err)
-			}
 			if result != tt.expected {
 				t.Errorf("ExistsByFirstNameAndLastNameAndIDNot() = %v, want %v", result, tt.expected)
 			}
@@ -351,7 +322,7 @@ func TestRepository_EdgeCases(t *testing.T) {
 			Age:       25,
 		}
 
-		err := repo.Save(context.Background(), user)
+		_, err := repo.Save(context.Background(), user)
 		if err != nil {
 			t.Errorf("Save() with empty ID should not error: %v", err)
 		}
@@ -378,10 +349,8 @@ func TestRepository_EdgeCases(t *testing.T) {
 		repo.Save(context.Background(), user)
 
 		// Check if empty names exist
-		exists, err := repo.ExistsByFirstNameAndLastName(context.Background(), "", "")
-		if err != nil {
-			t.Errorf("ExistsByFirstNameAndLastName() with empty names should not error: %v", err)
-		}
+		exists := repo.ExistsByFirstNameAndLastName(context.Background(), "", "")
+
 		if !exists {
 			t.Errorf("ExistsByFirstNameAndLastName() with empty names should return true")
 		}

@@ -15,7 +15,7 @@ type mockUserValidationService struct {
 
 type mockUserRepository struct {
 	FindByIDFunc                             func(ctx context.Context, id string) (*userDomain.User, error)
-	SaveFunc                                 func(ctx context.Context, user *userDomain.User) error
+	SaveFunc                                 func(ctx context.Context, user *userDomain.User) (*userDomain.User, error)
 	ExistsByFirstNameAndLastNameFunc         func(ctx context.Context, firstName string, lastName string) bool
 	ExistsByFirstNameAndLastNameAndIDNotFunc func(ctx context.Context, firstName string, lastName string, id string) bool
 }
@@ -23,7 +23,7 @@ type mockUserRepository struct {
 func (m *mockUserRepository) FindByID(ctx context.Context, id string) (*userDomain.User, error) {
 	return m.FindByIDFunc(ctx, id)
 }
-func (m *mockUserRepository) Save(ctx context.Context, user *userDomain.User) error {
+func (m *mockUserRepository) Save(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
 	return m.SaveFunc(ctx, user)
 }
 func (m *mockUserRepository) ExistsByFirstNameAndLastName(ctx context.Context, firstName string, lastName string) bool {
@@ -155,8 +155,8 @@ func TestService_Save(t *testing.T) {
 				},
 			},
 			mockUserRepository: &mockUserRepository{
-				SaveFunc: func(ctx context.Context, user *userDomain.User) error {
-					return nil
+				SaveFunc: func(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
+					return user, nil
 				},
 				ExistsByFirstNameAndLastNameAndIDNotFunc: func(ctx context.Context, firstName string, lastName string, id string) bool {
 					return false
@@ -216,7 +216,7 @@ func TestService_Save(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			service := NewService(test.mockUserValidationService, test.mockUserRepository)
-			err := service.Save(context.Background(), &test.user)
+			savedUser, err := service.Save(context.Background(), &test.user)
 
 			if test.expectedError {
 				if err == nil {
@@ -231,6 +231,24 @@ func TestService_Save(t *testing.T) {
 
 			if err != nil {
 				t.Errorf("Save() unexpected error: %v", err)
+			}
+			if savedUser == nil {
+				t.Errorf("Save() saved user is nil")
+			}
+			if savedUser.ID != test.user.ID {
+				t.Errorf("Save() saved user ID = %v, want %v", savedUser.ID, test.user.ID)
+			}
+			if savedUser.FirstName != test.user.FirstName {
+				t.Errorf("Save() saved user FirstName = %v, want %v", savedUser.FirstName, test.user.FirstName)
+			}
+			if savedUser.LastName != test.user.LastName {
+				t.Errorf("Save() saved user LastName = %v, want %v", savedUser.LastName, test.user.LastName)
+			}
+			if savedUser.Email != test.user.Email {
+				t.Errorf("Save() saved user Email = %v, want %v", savedUser.Email, test.user.Email)
+			}
+			if savedUser.Age != test.user.Age {
+				t.Errorf("Save() saved user Age = %v, want %v", savedUser.Age, test.user.Age)
 			}
 		})
 	}

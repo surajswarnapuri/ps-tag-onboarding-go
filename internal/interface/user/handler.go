@@ -14,10 +14,12 @@ import (
 
 const (
 	findRoute = "/find/{id}"
+	saveRoute = "/save"
 )
 
 type userApplicationService interface {
 	Find(ctx context.Context, id string) (*userDomain.User, error)
+	Save(ctx context.Context, user *userDomain.User) (*userDomain.User, error)
 }
 
 type Handler struct {
@@ -43,6 +45,28 @@ func (h Handler) Find() shared.Handler {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			json.NewEncoder(w).Encode(userDTO)
+		},
+	}
+}
+
+func (h Handler) Save() shared.Handler {
+	return shared.Handler{
+		Route: func(r *mux.Route) {
+			r.Path(saveRoute).Methods("POST")
+		},
+		Func: func(w http.ResponseWriter, r *http.Request) {
+			var userRequest UserDTO
+			json.NewDecoder(r.Body).Decode(&userRequest)
+			user, err := h.userService.Save(r.Context(), userRequest.ToDomain())
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+			var userResponse UserDTO
+			userResponse.FromDomain(user)
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			json.NewEncoder(w).Encode(userResponse)
 		},
 	}
 }

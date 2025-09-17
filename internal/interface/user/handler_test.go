@@ -1,6 +1,7 @@
 package user
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -14,10 +15,15 @@ import (
 
 type mockUserApplicationService struct {
 	FindFunc func(ctx context.Context, id string) (*userDomain.User, error)
+	SaveFunc func(ctx context.Context, user *userDomain.User) (*userDomain.User, error)
 }
 
 func (m *mockUserApplicationService) Find(ctx context.Context, id string) (*userDomain.User, error) {
 	return m.FindFunc(ctx, id)
+}
+
+func (m *mockUserApplicationService) Save(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
+	return m.SaveFunc(ctx, user)
 }
 
 func TestFind_HappyPath(t *testing.T) {
@@ -67,6 +73,72 @@ func TestFind_Error(t *testing.T) {
 	}
 	handler.Find().AddRoute(r)
 	r.ServeHTTP(w, httptest.NewRequest("GET", "/find/1", nil))
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("expected status code %d, got %d", http.StatusInternalServerError, w.Code)
+	}
+}
+
+func TestSave_HappyPath(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := mux.NewRouter()
+	serviceUser := &userDomain.User{ID: "1", FirstName: "John", LastName: "Doe", Email: "john@example.com", Age: 25}
+	handler := Handler{
+		userService: &mockUserApplicationService{
+			SaveFunc: func(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
+				return user, nil
+			},
+		},
+	}
+	handler.Save().AddRoute(r)
+
+	// Create a UserDTO for the request body
+	var userRequest UserDTO
+	userRequest.FromDomain(serviceUser)
+	body, err := json.Marshal(userRequest)
+	if err != nil {
+		t.Fatalf("failed to marshal userRequest: %v", err)
+	}
+
+	req := httptest.NewRequest("POST", "/save", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Errorf("expected status code %d, got %d", http.StatusOK, w.Code)
+	}
+
+	var userDTO UserDTO
+	json.Unmarshal(w.Body.Bytes(), &userDTO)
+	if userDTO.ID != serviceUser.ID {
+		t.Errorf("expected user ID %s, got %s", serviceUser.ID, userDTO.ID)
+	}
+	if userDTO.FirstName != serviceUser.FirstName {
+		t.Errorf("expected user FirstName %s, got %s", serviceUser.FirstName, userDTO.FirstName)
+	}
+	if userDTO.LastName != serviceUser.LastName {
+		t.Errorf("expected user LastName %s, got %s", serviceUser.LastName, userDTO.LastName)
+	}
+	if userDTO.Email != serviceUser.Email {
+		t.Errorf("expected user Email %s, got %s", serviceUser.Email, userDTO.Email)
+	}
+	if userDTO.Age != serviceUser.Age {
+		t.Errorf("expected user Age %d, got %d", serviceUser.Age, userDTO.Age)
+	}
+}
+
+func TestSave_Error(t *testing.T) {
+	w := httptest.NewRecorder()
+	r := mux.NewRouter()
+	handler := Handler{
+		userService: &mockUserApplicationService{
+			SaveFunc: func(ctx context.Context, user *userDomain.User) (*userDomain.User, error) {
+				return nil, fmt.Errorf("invalid user")
+			},
+		},
+	}
+	handler.Save().AddRoute(r)
+	r.ServeHTTP(w, httptest.NewRequest("POST", "/save", nil))
+
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("expected status code %d, got %d", http.StatusInternalServerError, w.Code)
 	}

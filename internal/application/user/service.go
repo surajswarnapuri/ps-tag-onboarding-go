@@ -17,6 +17,7 @@ type service struct {
 	userRepository        user.Repository
 }
 
+// NewService creates a new user service
 func NewService(userValidationService userValidationService, userRepository user.Repository) *service {
 	return &service{
 		userValidationService: userValidationService,
@@ -24,6 +25,7 @@ func NewService(userValidationService userValidationService, userRepository user
 	}
 }
 
+// Find finds a user by id
 func (s *service) Find(ctx context.Context, id string) (*user.User, error) {
 	user, err := s.userRepository.FindByID(ctx, id)
 	if err != nil {
@@ -32,6 +34,7 @@ func (s *service) Find(ctx context.Context, id string) (*user.User, error) {
 	return user, nil
 }
 
+// Save adds a user to the repository
 func (s *service) Save(ctx context.Context, user *user.User) (*user.User, error) {
 	err := s.userValidationService.ValidateUser(*user)
 	if err != nil {

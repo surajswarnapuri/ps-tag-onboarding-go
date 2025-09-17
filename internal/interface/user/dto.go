@@ -2,6 +2,7 @@ package user
 
 import userDomain "github.com/surajswarnapuri/ps-tag-onboarding-go/internal/domain/user"
 
+// UserDTO is a user data transfer object
 type UserDTO struct {
 	ID        string `json:"id"`
 	FirstName string `json:"first_name"`
@@ -10,6 +11,7 @@ type UserDTO struct {
 	Age       int    `json:"age"`
 }
 
+// ToEntity converts a UserDTO to a userDomain.User
 func (u *UserDTO) ToEntity() *userDomain.User {
 	return &userDomain.User{
 		ID:        u.ID,
@@ -20,6 +22,7 @@ func (u *UserDTO) ToEntity() *userDomain.User {
 	}
 }
 
+// FromEntity converts a userDomain.User to a UserDTO
 func (u *UserDTO) FromEntity(user *userDomain.User) {
 	u.ID = user.ID
 	u.FirstName = user.FirstName

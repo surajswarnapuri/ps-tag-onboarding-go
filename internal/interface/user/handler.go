@@ -18,18 +18,23 @@ const (
 )
 
 type userApplicationService interface {
+	// Find finds a user by id
 	Find(ctx context.Context, id string) (*userDomain.User, error)
+	// Save saves a user
 	Save(ctx context.Context, user *userDomain.User) (*userDomain.User, error)
 }
 
+// Handler is a handler for the user domain
 type Handler struct {
 	userService userApplicationService
 }
 
+// NewHandler creates a new handler for the user domain
 func NewHandler(userService userApplicationService) *Handler {
 	return &Handler{userService: userService}
 }
 
+// Find is the api handler for the /find/{id} route
 func (h Handler) Find() shared.Handler {
 	return shared.Handler{
 		Route: func(r *mux.Route) {
@@ -53,6 +58,7 @@ func (h Handler) Find() shared.Handler {
 	}
 }
 
+// Save is the api handler for the /save route
 func (h Handler) Save() shared.Handler {
 	return shared.Handler{
 		Route: func(r *mux.Route) {

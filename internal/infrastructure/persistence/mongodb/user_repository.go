@@ -12,6 +12,7 @@ type repository struct {
 	client *MongoDBClient
 }
 
+// NewRepository creates a new repository using a MongoDB client
 func NewRepository(client *MongoDBClient) userEntity.Repository {
 	return &repository{client: client}
 }

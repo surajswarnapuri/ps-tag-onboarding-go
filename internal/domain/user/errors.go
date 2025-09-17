@@ -10,6 +10,7 @@ const (
 )
 
 // Error Constructors
+// NewAgeMinimumError creates a new age minimum error
 func NewAgeMinimumError() shared.ValidationError {
 	return shared.ValidationError{
 		Code:    ErrorAgeMinimum,
@@ -17,6 +18,7 @@ func NewAgeMinimumError() shared.ValidationError {
 	}
 }
 
+// NewEmailFormatError creates a new email format error
 func NewEmailFormatError() shared.ValidationError {
 	return shared.ValidationError{
 		Code:    ErrorEmailFormat,
@@ -24,6 +26,7 @@ func NewEmailFormatError() shared.ValidationError {
 	}
 }
 
+// NewEmailRequiredError creates a new email required error
 func NewEmailRequiredError() shared.ValidationError {
 	return shared.ValidationError{
 		Code:    ErrorEmailRequired,
@@ -31,6 +34,7 @@ func NewEmailRequiredError() shared.ValidationError {
 	}
 }
 
+// NewNameRequiredError creates a new name required error
 func NewNameRequiredError() shared.ValidationError {
 	return shared.ValidationError{
 		Code:    ErrorNameRequired,

@@ -19,7 +19,7 @@ import (
 func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-
+	// config
 	uri := os.Getenv("MONGO_URI")
 	var userRepository userEntity.Repository
 
@@ -37,6 +37,7 @@ func main() {
 		userRepository = mongodb.NewRepository(client)
 	}
 
+	// services
 	userValidationService := userEntity.NewValidationService()
 	userService := userApplication.NewService(userValidationService, userRepository)
 	userHandler := userInterface.NewHandler(userService)

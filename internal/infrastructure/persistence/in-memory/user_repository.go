@@ -12,6 +12,7 @@ type repository struct {
 	users map[string]*user.User
 }
 
+// NewRepository creates a new repository in memory
 func NewRepository() user.Repository {
 	return &repository{
 		users: make(map[string]*user.User),

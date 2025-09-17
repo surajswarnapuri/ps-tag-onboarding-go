@@ -15,11 +15,10 @@ type MongoDBClient struct {
 }
 
 const (
-	databaseName   = "user"
-	collectionName = "user"
+	databaseName = "user"
 )
 
-func NewMongoDBClient(ctx context.Context, uri string) (*MongoDBClient, error) {
+func NewMongoDBClient(ctx context.Context, uri string, collectionName string) (*MongoDBClient, error) {
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)

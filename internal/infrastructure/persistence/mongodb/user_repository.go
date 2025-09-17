@@ -45,33 +45,18 @@ func (r *repository) Save(ctx context.Context, userEntity *userEntity.User) (*us
 func (r *repository) ExistsByFirstNameAndLastName(ctx context.Context, firstName string, lastName string) bool {
 	filter := bson.M{"first_name": firstName, "last_name": lastName}
 
-	var userDTO *user
-	err := r.client.GetCollection().FindOne(ctx, filter).Decode(userDTO)
-	if err != nil {
-		return false
-	}
-
-	// if userDTO is nil, then the user does not exist
-	if userDTO == nil {
-		return false
-	}
-
-	return true
+	var userDTO user
+	err := r.client.GetCollection().FindOne(ctx, filter).Decode(&userDTO)
+	// if there is no error then user exists
+	return err == nil
 }
 
 func (r *repository) ExistsByFirstNameAndLastNameAndIDNot(ctx context.Context, firstName string, lastName string, id string) bool {
 	filter := bson.M{"first_name": firstName, "last_name": lastName, "_id": bson.M{"$ne": id}}
 
-	var userDTO *user
-	err := r.client.GetCollection().FindOne(ctx, filter).Decode(userDTO)
-	if err != nil {
-		return false
-	}
+	var userDTO user
+	err := r.client.GetCollection().FindOne(ctx, filter).Decode(&userDTO)
 
-	// if userDTO is nil, then the user does not exist
-	if userDTO == nil {
-		return false
-	}
-
-	return true
+	// if there is no error then user exists
+	return err == nil
 }

@@ -1,3 +1,4 @@
+// Package inmemory contains the implementation of the User repository in memory.
 package inmemory
 
 import (
@@ -20,7 +21,7 @@ func NewRepository() user.Repository {
 func (r *repository) FindByID(ctx context.Context, id string) (*user.User, error) {
 	user, ok := r.users[id]
 	if !ok {
-		return nil, fmt.Errorf("user not found")
+		return nil, fmt.Errorf("user not found in memory")
 	}
 	return user, nil
 }
@@ -30,20 +31,20 @@ func (r *repository) Save(ctx context.Context, user *user.User) error {
 	return nil
 }
 
-func (r *repository) ExistsByFirstNameAndLastName(ctx context.Context, firstName string, lastName string) (bool, error) {
+func (r *repository) ExistsByFirstNameAndLastName(ctx context.Context, firstName string, lastName string) bool {
 	for _, user := range r.users {
 		if user.FirstName == firstName && user.LastName == lastName {
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
 
-func (r *repository) ExistsByFirstNameAndLastNameAndIDNot(ctx context.Context, firstName string, lastName string, id string) (bool, error) {
+func (r *repository) ExistsByFirstNameAndLastNameAndIDNot(ctx context.Context, firstName string, lastName string, id string) bool {
 	for _, user := range r.users {
 		if user.FirstName == firstName && user.LastName == lastName && user.ID != id {
-			return true, nil
+			return true
 		}
 	}
-	return false, nil
+	return false
 }
